@@ -48,6 +48,8 @@ services:
       - mysql_data:/var/lib/mysql
       - /srv/invoiceninja/mysql-logs:/var/log/mysql
     healthcheck:
+      # In-place upgrades can take longer than the default health retry window.
+      start_period: 5m
       test: ["CMD-SHELL", "MYSQL_PWD=\"$$MYSQL_PASSWORD\" mysqladmin ping -h localhost -u \"$$MYSQL_USER\""]
 
   redis:
