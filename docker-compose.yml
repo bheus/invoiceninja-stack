@@ -1,0 +1,81 @@
+name: invoiceninja
+
+services:
+  app:
+    image: invoiceninja/invoiceninja-debian:5.13.54
+    restart: unless-stopped
+    env_file:
+      - ./stack.env
+    volumes:
+      - app_public:/var/www/html/public
+      - app_storage:/var/www/html/storage
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  nginx:
+    image: nginx:1.31.9-alpine
+    restart: unless-stopped
+    ports:
+      - "8012:80"
+    volumes:
+      - type: bind
+        source: ./nginx/invoiceninja.conf
+        target: /etc/nginx/conf.d/invoiceninja.conf
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ./nginx/laravel.conf
+        target: /etc/nginx/conf.d/laravel.conf
+        read_only: true
+        bind:
+          create_host_path: false
+      - app_public:/var/www/html/public:ro
+      - app_storage:/var/www/html/storage:ro
+    depends_on:
+      app:
+        condition: service_healthy
+
+  mysql:
+    image: mysql:8.4.9
+    restart: unless-stopped
+    command:
+      - --innodb-buffer-pool-size=512M
+      - --slow-query-log=ON
+      - --long-query-time=1
+      - --slow-query-log-file=/var/log/mysql/slow.log
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE:?required}
+      MYSQL_USER: ${MYSQL_USER:?required}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?required}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?required}
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - /srv/invoiceninja/mysql-logs:/var/log/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "MYSQL_PWD=\"$$MYSQL_PASSWORD\" mysqladmin ping -h localhost -u \"$$MYSQL_USER\""]
+
+  redis:
+    image: redis:8.6.3-alpine
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+
+volumes:
+  app_public:
+    external: true
+    name: invoiceninja_app_public
+  app_storage:
+    external: true
+    name: invoiceninja_app_storage
+  mysql_data:
+    external: true
+    name: invoiceninja_mysql_data
+  redis_data:
+    external: true
+    name: invoiceninja_redis_data

@@ -1,0 +1,12 @@
+version: 2
+updates:
+  - package-ecosystem: docker-compose
+    directory: /
+    schedule:
+      interval: weekly
+      day: sunday
+    ignore:
+      - dependency-name: mysql
+        update-types: [version-update:semver-major, version-update:semver-minor]
+      - dependency-name: redis
+        update-types: [version-update:semver-major]
