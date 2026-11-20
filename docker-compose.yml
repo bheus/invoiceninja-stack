@@ -51,7 +51,7 @@ services:
       test: ["CMD-SHELL", "MYSQL_PWD=\"$$MYSQL_PASSWORD\" mysqladmin ping -h localhost -u \"$$MYSQL_USER\""]
 
   redis:
-    image: redis:8.6.3-alpine
+    image: redis:8.10.3-alpine
     restart: unless-stopped
     volumes:
       - redis_data:/data
