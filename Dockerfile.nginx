@@ -1,0 +1,2 @@
+FROM nginx:1.31.9-alpine
+COPY nginx/invoiceninja.conf nginx/laravel.conf /etc/nginx/conf.d/
