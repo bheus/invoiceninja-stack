@@ -2,7 +2,7 @@ name: invoiceninja
 
 services:
   app:
-    image: invoiceninja/invoiceninja-debian:5.13.54
+    image: invoiceninja/invoiceninja-debian:5.13.56
     restart: unless-stopped
     env_file:
       - ./stack.env
